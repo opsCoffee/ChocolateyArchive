@@ -1,0 +1,114 @@
+name: 🗃️ test Manager Archive
+
+on:
+  workflow_dispatch:
+
+env:
+  PACKAGE_MANAGER_DIR: D:\00PackageManager
+  CHOCO_CACHE: D:\ChocoCache
+  CHOCOLATEYINSTALL: D:\00PackageManager\chocolatey
+  CHOCOLATEYLASTPATHUPDATE: D:\00PackageManager\chocolateytools
+
+jobs:
+  build-and-deploy:
+    runs-on: windows-latest
+
+    steps:
+    - name: Check Admin Rights
+      shell: pwsh
+      run: |
+        $isAdmin = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+        Write-Host "Is Administrator: $isAdmin"
+
+    - name: Setup Chocolatey
+      shell: pwsh
+      run: |
+        # 创建必要目录
+        New-Item -Path $env:PACKAGE_MANAGER_DIR -ItemType Directory -Force
+        New-Item -Path $env:CHOCO_CACHE -ItemType Directory -Force
+        New-Item -Path $env:CHOCOLATEYINSTALL -ItemType Directory -Force
+        New-Item -Path $env:CHOCOLATEYLASTPATHUPDATE -ItemType Directory -Force
+
+    - name: Install Chocolatey
+      shell: pwsh
+      run: |
+        Set-ExecutionPolicy Bypass -Scope Process -Force;
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072;
+        [Environment]::SetEnvironmentVariable("ChocolateyInstall", $customChocoPath, "Machine")
+        [Environment]::SetEnvironmentVariable("ChocolateyLastPathUpdate", $customToolsPath, "Machine")
+        iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+
+    - name: show config with Chocolatey
+      shell: pwsh
+      run: |
+        choco config
+
+    - name: Install Packages with Chocolatey
+      shell: pwsh
+      run: |
+        choco install --yes --cache-location $env:CHOCO_CACHE ./package.config
+
+    - name: show list with Chocolatey
+      shell: pwsh
+      run: |
+        choco list
+        choco export
+
+    - name: Install Packages with Chocolatey
+      shell: pwsh
+      run: |
+        tree /f $env:CHOCOLATEYINSTALL
+        tree /f $env:CHOCOLATEYLASTPATHUPDATE
+        tree /f $env:PACKAGE_MANAGER_DIR
+        tree /f $env:CHOCO_CACHE
+
+    - name: Upload export List
+      uses: actions/upload-artifact@v4
+      with:
+          name: packages.config
+          path: packages.config
+          retention-days: 3
+          compression-level: 0
+
+    # - name: Compress Directory
+    #   shell: pwsh
+    #   run: |
+    #     # 使用系统自带的 7-Zip
+    #     $7zPath = "${env:ProgramFiles}\7-Zip\7z.exe"
+    #     if (-not (Test-Path $7zPath)) {
+    #       throw "7-Zip not found. Ensure it's installed by Chocolatey."
+    #     }
+
+    #     & $7zPath a `
+    #       -t7z `
+    #       -mx9 `
+    #       -snh `
+    #       -snl `
+    #       "${env:PACKAGE_MANAGER_DIR}.7z" `
+    #       "${env:PACKAGE_MANAGER_DIR}\*"
+
+    #     & $7zPath a `
+    #       -t7z `
+    #       -mx9 `
+    #       -snh `
+    #       -snl `
+    #       "${env:CHOCO_CACHE}.7z" `
+    #       "${env:CHOCO_CACHE}\*"
+
+
+    # - name: Upload Artifact
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #       name: package-manager-archive
+    #       path: ${{ env.PACKAGE_MANAGER_DIR }}.7z
+    #       retention-days: 3
+    #       compression-level: 0
+
+    # - name: Upload Artifact
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #       name: package-cache-archive
+    #       path: ${{ env.CHOCO_CACHE }}.7z
+    #       retention-days: 3
+    #       compression-level: 0
+                
