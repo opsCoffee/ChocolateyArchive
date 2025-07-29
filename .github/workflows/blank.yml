@@ -17,7 +17,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-
       - name: Check Admin Rights
         shell: pwsh
         run: |
@@ -32,6 +31,8 @@ jobs:
           New-Item -Path $env:CHOCO_CACHE -ItemType Directory -Force
           New-Item -Path $env:CHOCOLATEYINSTALL -ItemType Directory -Force
           New-Item -Path $env:CHOCOLATEYLASTPATHUPDATE -ItemType Directory -Force
+          pwd
+          ls
 
       - name: Install Chocolatey
         shell: pwsh
@@ -50,7 +51,7 @@ jobs:
       - name: Install Packages with Chocolatey
         shell: pwsh
         run: |
-          choco install --yes --cache-location $env:CHOCO_CACHE ./package.config
+          choco install --yes --cache-location $env:CHOCO_CACHE package.config
 
       - name: show list with Chocolatey
         shell: pwsh
