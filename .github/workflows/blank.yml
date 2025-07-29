@@ -51,7 +51,7 @@ jobs:
       - name: Install Packages with Chocolatey
         shell: pwsh
         run: |
-          choco install --yes --cache-location $env:CHOCO_CACHE package.config
+          choco install --yes --cache-location $env:CHOCO_CACHE packages.config
 
       - name: show list with Chocolatey
         shell: pwsh
