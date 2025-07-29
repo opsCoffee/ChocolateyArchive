@@ -75,45 +75,44 @@ jobs:
             retention-days: 3
             compression-level: 0
 
-      # - name: Compress Directory
-      #   shell: pwsh
-      #   run: |
-      #     # 使用系统自带的 7-Zip
-      #     $7zPath = "${env:ProgramFiles}\7-Zip\7z.exe"
-      #     if (-not (Test-Path $7zPath)) {
-      #       throw "7-Zip not found. Ensure it's installed by Chocolatey."
-      #     }
+      - name: Compress Directory
+        shell: pwsh
+        run: |
+          # 使用系统自带的 7-Zip
+          $7zPath = "${env:ProgramFiles}\7-Zip\7z.exe"
+          if (-not (Test-Path $7zPath)) {
+            throw "7-Zip not found. Ensure it's installed by Chocolatey."
+          }
 
-      #     & $7zPath a `
-      #       -t7z `
-      #       -mx9 `
-      #       -snh `
-      #       -snl `
-      #       "${env:PACKAGE_MANAGER_DIR}.7z" `
-      #       "${env:PACKAGE_MANAGER_DIR}\*"
+          & $7zPath a `
+            -t7z `
+            -mx9 `
+            -snh `
+            -snl `
+            "${env:PACKAGE_MANAGER_DIR}.7z" `
+            "${env:PACKAGE_MANAGER_DIR}\*"
 
-      #     & $7zPath a `
-      #       -t7z `
-      #       -mx9 `
-      #       -snh `
-      #       -snl `
-      #       "${env:CHOCO_CACHE}.7z" `
-      #       "${env:CHOCO_CACHE}\*"
+          & $7zPath a `
+            -t7z `
+            -mx9 `
+            -snh `
+            -snl `
+            "${env:CHOCO_CACHE}.7z" `
+            "${env:CHOCO_CACHE}\*"
 
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+            name: package-manager-archive
+            path: ${{ env.PACKAGE_MANAGER_DIR }}.7z
+            retention-days: 3
+            compression-level: 0
 
-      # - name: Upload Artifact
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #       name: package-manager-archive
-      #       path: ${{ env.PACKAGE_MANAGER_DIR }}.7z
-      #       retention-days: 3
-      #       compression-level: 0
-
-      # - name: Upload Artifact
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #       name: package-cache-archive
-      #       path: ${{ env.CHOCO_CACHE }}.7z
-      #       retention-days: 3
-      #       compression-level: 0
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+            name: package-cache-archive
+            path: ${{ env.CHOCO_CACHE }}.7z
+            retention-days: 3
+            compression-level: 0
                 
